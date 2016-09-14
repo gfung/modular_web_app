@@ -10,16 +10,15 @@ const chalk = require('chalk');
 const errorHandler = require('errorhandler');
 // const lusca = require('lusca');
 const dotenv = require('dotenv');
-const flash = require('express-flash');
+// const flash = require('express-flash');
 const path = require('path');
 const expressValidator = require('express-validator');
 const sass = require('node-sass-middleware');
 const multer = require('multer');
 const upload = multer({ dest: path.join(__dirname, 'uploads') });
 const fs = require("fs");
-const https = require("https")
 const router = express.Router();
-// const mods = require("./modules")
+const homeController = require('./controllers/home');
 
 /**
  * Load environment variables from .env file, where API keys and passwords are configured.
@@ -47,7 +46,7 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(expressValidator());
-app.use(flash());
+// app.use(flash());
 // app.use((req, res, next) => {
 //     lusca.csrf()(req, res, next);
 // });
@@ -70,39 +69,26 @@ app.use(express.static(path.join(__dirname, 'public'), { maxAge: 31557600000 }))
 /** 
  *	import from modules folder
  */
+
 fs.readdir(__dirname+'/modules', function(error, files){
 	if_err(error)
+
 	files.forEach(function (file){
 		app.use("/"+file, require("./modules/"+file))
+		// app.set('views', path.join(__dirname, 'views'), path.join(__dirname, "/modules/"+file+'/views') )
 	})
 })
-
-/** 
- *	Set https call function
- */
-// var options = {
-//   hostname: 'encrypted.google.com',
-//   port: 443,
-//   path: '/',
-//   method: 'GET'
-// };
-
-function https_req(options){
-	https.request(options, (res) => {
-  		console.log('statusCode:', res.statusCode);
-		console.log('headers:', res.headers);
-		res.on('data', (d) => {
-	    	process.stdout.write(d);
-	  	});
-	});
-}
 
 /**
  * ROUTES
  */
-app.get("/", function(req,res,next){
-	res.status(200).send("Hi")
-})
+app.route("/")
+	//always run this first no matter the request type
+	.all(homeController.always)
+	//get requests
+	.get(homeController.index)
+	//post requests
+	.post(homeController.test)
 
 /**
  * Start Express server.
