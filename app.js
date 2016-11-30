@@ -18,7 +18,15 @@ const multer = require('multer');
 const upload = multer({ dest: path.join(__dirname, 'uploads') });
 const fs = require("fs");
 const router = express.Router();
-const homeController = require('./controllers/home');
+
+// dynamically include routes (Controller)
+fs.readdirSync('./controllers').forEach(function (file) {
+  if(file.substr(-3) == '.js') {
+      route = require('./controllers/' + file);
+      route.controller(app);
+  }
+});
+//const homeController = require('./controllers/home');
 
 /**
  * Load environment variables from .env file, where API keys and passwords are configured.
